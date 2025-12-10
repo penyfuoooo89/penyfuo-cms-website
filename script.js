@@ -253,28 +253,93 @@ const defaultFAQData = [
     }
 ];
 
-// Load data from localStorage or use defaults
-let customPortfolio = JSON.parse(localStorage.getItem('customPortfolio')) || defaultCustomPortfolio;
-let originalPortfolio = JSON.parse(localStorage.getItem('originalPortfolio')) || defaultOriginalPortfolio;
-let processSteps = JSON.parse(localStorage.getItem('processSteps')) || defaultProcessSteps;
-let pricingPlans = JSON.parse(localStorage.getItem('pricingPlans')) || defaultPricingPlans;
-let faqData = JSON.parse(localStorage.getItem('faqData')) || defaultFAQData;
-let siteContent = JSON.parse(localStorage.getItem('siteContent')) || {
+// Load data from localStorage or use defaults (with error handling)
+function loadFromStorage(key, defaultValue) {
+    try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error(`載入 ${key} 時發生錯誤:`, e);
+    }
+    return defaultValue;
+}
+
+let customPortfolio = loadFromStorage('customPortfolio', defaultCustomPortfolio);
+let originalPortfolio = loadFromStorage('originalPortfolio', defaultOriginalPortfolio);
+let processSteps = loadFromStorage('processSteps', defaultProcessSteps);
+let pricingPlans = loadFromStorage('pricingPlans', defaultPricingPlans);
+let faqData = loadFromStorage('faqData', defaultFAQData);
+let siteContent = loadFromStorage('siteContent', {
     heroTitle: 'Penyfuo 客製化主題專區',
     heroSubtitle: '為您打造獨一無二的 LINE 主題設計',
     aboutP1: 'Penyfuo 是一個專注於 LINE 主題客製化設計的創意工作室。我們深入理解每位客戶的獨特需求,透過精心的設計與細緻的執行,將您的想法轉化為視覺藝術。',
     aboutP2: '從溫暖的家庭主題到浪漫的情侶設計,從可愛的寶寶主題到個性十足的原創作品,我們致力於為每位客戶創造一個專屬的 LINE 主題體驗。'
-};
+});
 
 // Save all data to localStorage
 function saveData() {
-    localStorage.setItem('customPortfolio', JSON.stringify(customPortfolio));
-    localStorage.setItem('originalPortfolio', JSON.stringify(originalPortfolio));
-    localStorage.setItem('processSteps', JSON.stringify(processSteps));
-    localStorage.setItem('pricingPlans', JSON.stringify(pricingPlans));
-    localStorage.setItem('faqData', JSON.stringify(faqData));
-    localStorage.setItem('siteContent', JSON.stringify(siteContent));
-    alert('✅ 資料已儲存！');
+    try {
+        // 確保 localStorage 可用
+        if (typeof(Storage) === "undefined") {
+            alert('❌ 您的瀏覽器不支援 LocalStorage，無法儲存資料！');
+            return;
+        }
+        
+        // 嘗試儲存每個項目，並捕捉個別錯誤
+        const saveItems = [
+            { key: 'customPortfolio', data: customPortfolio },
+            { key: 'originalPortfolio', data: originalPortfolio },
+            { key: 'processSteps', data: processSteps },
+            { key: 'pricingPlans', data: pricingPlans },
+            { key: 'faqData', data: faqData },
+            { key: 'siteContent', data: siteContent }
+        ];
+        
+        let savedCount = 0;
+        let failedItems = [];
+        
+        for (let item of saveItems) {
+            try {
+                const jsonString = JSON.stringify(item.data);
+                localStorage.setItem(item.key, jsonString);
+                savedCount++;
+            } catch (e) {
+                console.error(`儲存 ${item.key} 時發生錯誤:`, e);
+                failedItems.push(item.key);
+                
+                // 如果是容量問題，嘗試清理並重試
+                if (e.name === 'QuotaExceededError') {
+                    try {
+                        // 清理舊資料
+                        localStorage.clear();
+                        // 重新儲存所有項目
+                        for (let retryItem of saveItems) {
+                            const jsonString = JSON.stringify(retryItem.data);
+                            localStorage.setItem(retryItem.key, jsonString);
+                        }
+                        alert('✅ 資料已儲存！（已清理舊資料）');
+                        return;
+                    } catch (retryError) {
+                        alert('❌ 儲存失敗：容量不足。請嘗試刪除一些圖片或內容。');
+                        return;
+                    }
+                }
+            }
+        }
+        
+        if (failedItems.length === 0) {
+            alert('✅ 資料已儲存！');
+            console.log('成功儲存所有資料');
+        } else {
+            alert(`⚠️ 部分資料儲存失敗：${failedItems.join(', ')}`);
+        }
+        
+    } catch (error) {
+        console.error('儲存資料時發生錯誤:', error);
+        alert('❌ 儲存失敗：' + error.message);
+    }
 }
 
 // Login Modal Functions
@@ -627,9 +692,60 @@ function editFAQItem(id) {
 function handleImageUpload(input) {
     const file = input.files[0];
     if (file) {
+        // 檢查檔案大小（限制 5MB）
+        if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ 圖片檔案太大！請選擇小於 5MB 的圖片。');
+            input.value = '';
+            return;
+        }
+        
+        // 提示使用者上傳到圖床
+        const useImageHost = confirm(
+            '💡 建議使用圖床服務以避免容量限制！\n\n' +
+            '點擊「確定」查看圖床上傳教學\n' +
+            '點擊「取消」繼續使用本地上傳（可能導致容量不足）'
+        );
+        
+        if (useImageHost) {
+            // 開啟圖床教學
+            alert(
+                '📸 推薦免費圖床服務：\n\n' +
+                '1. ImgBB (https://imgbb.com)\n' +
+                '   - 免費、無需註冊\n' +
+                '   - 上傳後複製「直接連結」\n\n' +
+                '2. Imgur (https://imgur.com)\n' +
+                '   - 免費、支援大量圖片\n' +
+                '   - 右鍵圖片 → 複製圖片網址\n\n' +
+                '3. Postimages (https://postimages.org)\n' +
+                '   - 免費、永久儲存\n\n' +
+                '上傳後，將圖片網址貼到下方的「圖片網址」欄位即可！'
+            );
+            input.value = '';
+            return;
+        }
+        
+        // 使用 Base64（警告容量限制）
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('edit-image-url').value = e.target.result;
+            const base64 = e.target.result;
+            const sizeKB = Math.round(base64.length / 1024);
+            
+            // 警告如果圖片太大
+            if (sizeKB > 500) {
+                const proceed = confirm(
+                    `⚠️ 此圖片轉換後約 ${sizeKB}KB\n\n` +
+                    '使用本地上傳可能很快達到容量限制！\n' +
+                    '建議使用圖床服務。\n\n' +
+                    '是否仍要繼續？'
+                );
+                if (!proceed) {
+                    input.value = '';
+                    return;
+                }
+            }
+            
+            document.getElementById('edit-image-url').value = base64;
+            console.log(`圖片已轉換為 Base64，大小: ${sizeKB}KB`);
         };
         reader.readAsDataURL(file);
     }

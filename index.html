@@ -11,8 +11,10 @@
     <!-- Edit Mode Indicator -->
     <div id="edit-indicator" class="edit-indicator" style="display: none;">
         <span>✏️ 編輯模式</span>
-        <button onclick="exitEditMode()" class="exit-edit-btn">退出編輯</button>
+        <button onclick="exportData()" class="export-btn" title="匯出資料為 JSON 檔案">📥 匯出</button>
+        <button onclick="importData()" class="import-btn" title="從 JSON 檔案匯入資料">📤 匯入</button>
         <button onclick="saveData()" class="save-btn">💾 儲存</button>
+        <button onclick="exitEditMode()" class="exit-edit-btn">退出編輯</button>
     </div>
 
     <!-- Login Modal -->
@@ -187,5 +189,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="auto-save.js"></script>
+    <script src="export-import.js"></script>
 </body>
 </html>

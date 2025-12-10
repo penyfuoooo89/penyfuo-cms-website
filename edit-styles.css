@@ -18,7 +18,7 @@
     font-weight: 600;
 }
 
-.exit-edit-btn, .save-btn {
+.exit-edit-btn, .save-btn, .export-btn, .import-btn {
     background: white;
     color: #9333ea;
     border: none;
@@ -30,7 +30,22 @@
     transition: all 0.3s ease;
 }
 
-.exit-edit-btn:hover, .save-btn:hover {
+.export-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.import-btn {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.exit-edit-btn:hover, .save-btn:hover, .export-btn:hover, .import-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
