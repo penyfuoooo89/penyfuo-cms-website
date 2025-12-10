@@ -1,13 +1,195 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>penyfuo-cms-website-clean</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penyfuo 客製化設計 - LINE 主題專家</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="edit-styles.css">
+</head>
+<body>
+    <!-- Edit Mode Indicator -->
+    <div id="edit-indicator" class="edit-indicator" style="display: none;">
+        <span>✏️ 編輯模式</span>
+        <button onclick="exportData()" class="export-btn" title="匯出資料為 JSON 檔案">📥 匯出</button>
+        <button onclick="importData()" class="import-btn" title="從 JSON 檔案匯入資料">📤 匯入</button>
+        <button onclick="saveData()" class="save-btn">💾 儲存</button>
+        <button onclick="exitEditMode()" class="exit-edit-btn">退出編輯</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>登入編輯模式</h2>
+            <input type="password" id="password-input" placeholder="請輸入密碼" />
+            <button onclick="login()">登入</button>
+            <button onclick="closeLoginModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- Header / Navigation -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <h1>Penyfuo</h1>
+                    <span class="tagline">客製化設計</span>
+                </div>
+                <nav class="nav">
+                    <a href="#home" class="nav-link">首頁</a>
+                    <a href="#custom-portfolio" class="nav-link">客製化作品集</a>
+                    <a href="#original-portfolio" class="nav-link">原創作品集</a>
+                    <a href="#process" class="nav-link">客製化流程</a>
+                    <a href="#faq" class="nav-link">常見問題</a>
+                    <a href="https://lin.ee/0IGPAku" target="_blank" class="nav-link cta-link">我要客製化</a>
+                    <button onclick="showLoginModal()" class="nav-link login-btn">登入</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h2 class="hero-title editable" data-field="heroTitle">Penyfuo 客製化主題專區</h2>
+            <p class="hero-subtitle editable" data-field="heroSubtitle">為您打造獨一無二的 LINE 主題設計</p>
+            <div class="hero-buttons">
+                <a href="https://lin.ee/0IGPAku" target="_blank" class="btn btn-primary">
+                    <span>💬</span> 官方 LINE
+                </a>
+                <a href="https://store.line.me/themeshop/author/4774442" target="_blank" class="btn btn-secondary">
+                    <span>🛍️</span> LINE 商店
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+        <div class="container">
+            <h2 class="section-title">關於 Penyfuo</h2>
+            <div class="about-content">
+                <p class="editable" data-field="aboutP1">Penyfuo 是一個專注於 LINE 主題客製化設計的創意工作室。我們深入理解每位客戶的獨特需求，透過精心的設計與細緻的執行，將您的想法轉化為視覺藝術。</p>
+                <p class="editable" data-field="aboutP2">從溫暖的家庭主題到浪漫的情侶設計，從可愛的寶寶主題到個性十足的原創作品，我們致力於為每位客戶創造一個專屬的 LINE 主題體驗。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Portfolio Section -->
+    <section id="custom-portfolio" class="portfolio">
+        <div class="container">
+            <h2 class="section-title">客製化作品集</h2>
+            <div class="category-filter">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="family">家庭</button>
+                <button class="filter-btn" data-category="baby">寶寶</button>
+                <button class="filter-btn" data-category="couple">情侶</button>
+                <button class="filter-btn" data-category="personal">個人</button>
+                <button class="filter-btn" data-category="pet">寵物</button>
+                <button class="filter-btn" data-category="friend">朋友</button>
+            </div>
+            <div class="portfolio-grid" id="custom-grid">
+                <!-- Portfolio items will be inserted here by JavaScript -->
+            </div>
+            <button id="add-custom-btn" class="add-btn" style="display: none;" onclick="addCustomItem()">+ 新增客製化主題</button>
+        </div>
+    </section>
+
+    <!-- Original Portfolio Section -->
+    <section id="original-portfolio" class="portfolio portfolio-alt">
+        <div class="container">
+            <h2 class="section-title">原創作品集</h2>
+            <div class="category-filter">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="animal">動物系列</button>
+                <button class="filter-btn" data-category="character">人物系列</button>
+            </div>
+            <div class="portfolio-grid" id="original-grid">
+                <!-- Portfolio items will be inserted here by JavaScript -->
+            </div>
+            <button id="add-original-btn" class="add-btn" style="display: none;" onclick="addOriginalItem()">+ 新增原創主題</button>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section id="process" class="process">
+        <div class="container">
+            <h2 class="section-title">客製化流程</h2>
+            <p class="section-subtitle">從諮詢到完成，我們為您提供完整的服務流程</p>
+            <div class="process-timeline">
+                <!-- Process steps will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">價格方案</h2>
+            <p class="section-subtitle">選擇最適合您的客製化方案</p>
+            <div class="pricing-grid">
+                <!-- Pricing cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <h2 class="section-title">常見問題</h2>
+            <div class="faq-list">
+                <!-- FAQ items will be inserted here by JavaScript -->
+            </div>
+            <button id="add-faq-btn" class="add-btn" style="display: none;" onclick="addFAQItem()">+ 新增問題</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Penyfuo</h3>
+                    <p>為您打造獨一無二的 LINE 主題設計</p>
+                </div>
+                <div class="footer-links">
+                    <h4>追蹤我們</h4>
+                    <div class="social-links">
+                        <a href="https://lin.ee/0IGPAku" target="_blank" class="social-link">
+                            <span>💬</span> 官方 LINE
+                        </a>
+                        <a href="https://www.instagram.com/penyfuo89_theme_design" target="_blank" class="social-link">
+                            <span>📷</span> Instagram
+                        </a>
+                        <a href="https://tw.shp.ee/emSPQ2o" target="_blank" class="social-link">
+                            <span>🛒</span> 蝦皮商城
+                        </a>
+                        <a href="https://store.line.me/themeshop/author/4774442" target="_blank" class="social-link">
+                            <span>🛍️</span> LINE 商店
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Penyfuo. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <h2 id="modal-title">編輯項目</h2>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button onclick="saveEdit()" class="btn-save">儲存</button>
+                <button onclick="closeEditModal()" class="btn-cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="auto-save.js"></script>
+    <script src="export-import.js"></script>
+</body>
 </html>
